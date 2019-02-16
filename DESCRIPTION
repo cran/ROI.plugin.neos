@@ -1,5 +1,5 @@
 Package: ROI.plugin.neos
-Version: 0.3-0
+Version: 0.3-1
 Title: 'NEOS' Plug-in for the 'R' Optimization Interface
 Authors@R: c( person("Ronald", "Hochreiter", role = "aut"),
               person("Florian", "Schwendinger", role = c("aut", "cre"), email = "FlorianSchwendinger@gmx.at"))
@@ -10,11 +10,12 @@ Description: Enhances the 'R' Optimization Infrastructure ('ROI') package
 Imports: stats, methods, utils, ROI (>= 0.3-0), xmlrpc2, xml2
 Suggests: slam
 License: GPL-3
-URL: http://R-Forge.R-project.org/projects/roi
+URL: http://roi.r-forge.r-project.org/,
+        https://r-forge.r-project.org/projects/roi/
 NeedsCompilation: no
-Packaged: 2018-06-16 13:11:06 UTC; florian
+Packaged: 2019-02-16 13:47:19 UTC; florian
 Author: Ronald Hochreiter [aut],
   Florian Schwendinger [aut, cre]
 Maintainer: Florian Schwendinger <FlorianSchwendinger@gmx.at>
 Repository: CRAN
-Date/Publication: 2018-06-19 12:48:04 UTC
+Date/Publication: 2019-02-16 16:20:04 UTC

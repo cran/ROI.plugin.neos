@@ -1,3 +1,60 @@
+## Imports
+#' @import "ROI"
+#' @import "xml2"
+#' @import "xmlrpc2"
+#' @importFrom "methods", "getPackageName", "getFunction"
+#' @importFrom "stats", "setNames", "terms", "aggregate"
+#' @importFrom "utils", "tail", "modifyList"
+#
+
+#' @title Control Variables
+#' @description The control variables for \code{ROI.plugin.neos}.
+#'   \arguments{
+#'      \item{user}{a character string giving the username.}
+#'      \item{email}{a character string giving the email address.}
+#'      \item{dry_run}{a logical if \code{TRUE} \pkg{ROI} returns the solver call.}
+#'      \item{wait}{a logical indicating whether the R interpreter should wait for the 
+#'          command to finish, or run it asynchronously. If \code{TRUE} 
+#'          \pkg{ROI} returns an object of class \code{"neos_job"}.}
+#'   }
+#' @name control
+#' @rdname control
+NULL
+
+
+#' @title Linear Problem 1
+#' @description
+#' \deqn{maximize \ \ 2 x_1 + 4 x_2 + 3 x_3}
+#' \deqn{subject \ to:}
+#' \deqn{3 x_1 + 4 x_2 + 2 x_3 \leq 60}
+#' \deqn{2 x_1 +   x_2 + 2 x_3 \leq 40}
+#' \deqn{  x_1 + 3 x_2 + 2 x_3 \leq 80}
+#' \deqn{x_1, x_2, x_3 \geq 0}
+#' @examples
+#' \dontrun{
+#' library(ROI)
+#' mat <- matrix(c(3, 4, 2,
+#'                 2, 1, 2,
+#'                 1, 3, 2), nrow=3, byrow=TRUE)
+#' x <- OP(objective = c(2, 4, 3),
+#'         constraints = L_constraint(L = mat,
+#'                                    dir = c("<=", "<=", "<="),
+#'                                    rhs = c(60, 40, 80)),
+#'         maximum = TRUE)
+#' 
+#' 
+#' opt <- ROI_solve(x, solver = "neos", method = "scip")
+#' opt
+#' ## Optimal solution found.
+#' ## The objective value is: 7.666667e+01
+#' solution(opt)
+#' ## [1]  0.000000  6.666667 16.666667
+#' }
+#' @name Example-1
+#' @rdname Example_01
+NULL
+
+
 
 ## NOTE: Gurobi
 ##       The Gurobi license for NEOS does not permit connections via XML-RPC. 
@@ -91,7 +148,7 @@ solve_OP <- function(x, control = list()) {
     solver_name <- unname(select_neos_solver(control$method, is_mip, model_type))
 
     xml <- neos_xml_call(model, solver_name, control$email)
-    solver_call <- list(neos_submit_job, xmlstring = xml, user = control$user, 
+    solver_call <- list(neos_submit_job, x = x, xmlstring = xml, user = control$user, 
                         password = control$password)
     mode(solver_call) <- "call"
     if ( isTRUE(control$dry_run) )

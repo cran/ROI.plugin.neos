@@ -76,17 +76,17 @@ set_templanete_parameters <- function(xml_template, params) {
     as.character(xml_template)
 }
 
-neos_submit_job <- function(xmlstring, user = NULL, password = NULL) {
+neos_submit_job <- function(x, xmlstring, user = NULL, password = NULL) {
     if ( is.null(user) | is.null(password) ) {
         response <- xmlrpc(neos_url(), "submitJob", params = list(xmlstring = xmlstring))
     } else {
         params <- list(xmlstring = xmlstring, user = user, password = password)
         response <- xmlrpc(neos_url(), "submitJob", params = params)
     }
-    neos_job(response[[1]], response[[2]])
+    neos_job(response[[1]], response[[2]], x)
 }
 
-neos_job <- function(job_number, password) {
+neos_job <- function(job_number, password, x) {
     job <- list()
     class(job) <- "neos_job"
     job$job_number <- job_number
@@ -114,7 +114,39 @@ neos_job <- function(job_number, password) {
         response <- xmlrpc(neos_url(), "getOutputFile", params = params)
         rawToChar(response)
     }
+    job$objective_function <- objective(x)
+    job$solution <- function() {
+        self <- parent.env(environment())$job
+        if ( isTRUE(self$status() != "Done") ) {
+            message("job not finished yet")
+            return(NULL)
+        }
+        neos_message <- self$final_results()
+        if ( !neos_message_indicates_success(neos_message) ) {
+            stop(neos_message)
+        }
+        neos_results <- extract_results(self$output_file("results.txt"))
+        objval <- tryCatch(unname(self$objective_function(neos_results$solution)), error = function(e) NA_real_)
+        status <- generate_status_code(neos_results$solver_status, neos_results$model_status)
+        neos_results$message <- neos_message
+    
+        ROI_plugin_canonicalize_solution(solution = neos_results$solution, 
+                                         optimum = objval, status = status,
+                                         solver = "neos", message = neos_results)
+    }
     job
+}
+
+neos_read_result_file <- function(file, neos_message, objective_function) {
+    neos_results <- extract_results(readLines(file))
+    objval <- tryCatch(unname(objective_function(neos_results$solution)), 
+                       error = function(e) NA_real_)
+    status <- generate_status_code(neos_results$solver_status, neos_results$model_status)
+    neos_results$message <- neos_message
+    
+    ROI_plugin_canonicalize_solution(solution = neos_results$solution, 
+                                     optimum = objval, status = status,
+                                     solver = "neos", message = neos_results)
 }
 
 neos_get_results <- function(job) {
