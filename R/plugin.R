@@ -71,7 +71,7 @@ write_gams <- function(x, file, ...) {
 }
 
 set_default_control_values <- function(x) {
-    default_cntrl <- list(user = "rneos")
+    default_cntrl <- neos_control()
     modifyList(x, default_cntrl[!names(default_cntrl) %in% names(x)])
 }
 
@@ -91,28 +91,26 @@ match_solver <- function(method) {
 }
 
 select_neos_solver <- function(method, is_mip, model_type) {
-    if ( is.null(method) ) {
+    if ( method == "auto" ) {
         method <- select_method(model_type, is_mip)
-        warning("no method provided set to ", shQuote(method), call. = TRUE)
+        # warning("no method provided set to ", shQuote(method), call. = TRUE)
         return(method)
     }
     match_solver(method)
 }
 
-neos_xml_call <- function(model, solver_name, email) {
+neos_xml_call <- function(model, solver_name, control) {
     cate <- unname(match_category(solver_name))
     template <- neos_solver_template(category = cate, solver_name = solver_name, 
                                      input_method = "GAMS")
-    argslist <- c(email = email, list(model = model, options = "", gdx = "", 
-                                      wantgdx = "", wantlog = "", comments = ""))
-    xml <- set_templanete_parameters(xml_template = template, params = argslist)
-    ## NOTE: This is not necessary any more.
-    ## some solvers need a working email address not supported by rneos therefore
-    ## we inject it
-    ## if ( !is.null(email) ) {
-    ##     email_insertion <- sprintf("<email>%s</email>\n <model>", email)
-    ##     xml <- gsub("<model>", email_insertion, xml, fixed = TRUE)
-    ## }
+    control$model <- model
+    template_args <- c("email", "model", "options", "parameters", "gdx", "restart", 
+        "wantgdx", "wantlst", "wantlog", "comments")
+    argslist <- control[template_args]
+    if (nchar(argslist$email) == 0) {
+        argslist$email <- NULL
+    }
+    xml <- set_template_parameters(xml_template = template, params = argslist)
     xml
 }
 
@@ -125,14 +123,14 @@ raise_licence_error <- function(password) {
          " Or just use a alternative solver.")
 }
 
-## if (FALSE) {
-##     library(xml2)
-##     library(xmlrpc2)
-##     attach(getNamespace("ROI.plugin.neos"), name = "package:ROI.plugin.neos")
-##     control <- list()
-## }
 
-solve_OP <- function(x, control = list()) {
+neos_control <- function(method="auto", wait = TRUE, email="", password="", user = "rneos", 
+    dry_run=FALSE, options="", parameters="", gdx="", restart="", wantgdx="", wantlst="",
+    wantlog="", comments="") {
+    as.list(environment())
+}
+
+solve_OP <- function(x, control = neos_control()) {
     control <- set_default_control_values(control)
 
     if ( inherits(constraints(x), "NO_constraint") ) {
@@ -147,7 +145,7 @@ solve_OP <- function(x, control = list()) {
 
     solver_name <- unname(select_neos_solver(control$method, is_mip, model_type))
 
-    xml <- neos_xml_call(model, solver_name, control$email)
+    xml <- neos_xml_call(model, solver_name, control)
     solver_call <- list(neos_submit_job, x = x, xmlstring = xml, user = control$user, 
                         password = control$password)
     mode(solver_call) <- "call"
@@ -159,32 +157,15 @@ solve_OP <- function(x, control = list()) {
     if ( any(grep("Error", job$password, ignore.case = TRUE)) )
         raise_licence_error(job$password)
 
-    if ( (is.logical(control$wait) & !isTRUE(control$wait)) )
+    if ( !isTRUE(control$wait) )
         return(job)
 
-    neos_message <- job$final_results()
-    if ( !neos_message_indicates_success(neos_message) ) stop(neos_message)
-    neos_results <- extract_results(job$output_file("results.txt"))
-    objval <- tryCatch(objective(x)(neos_results$solution), error = function(e) NA_real_)
-    status <- generate_status_code(neos_results$solver_status, neos_results$model_status)
-    neos_results$message <- neos_message
-    
-    ROI_plugin_canonicalize_solution(solution = neos_results$solution, 
-                                     optimum = objval, status = status,
-                                     solver = "neos", message = neos_results)
+    job$solution(wait=TRUE)
 }
 
 neos_message_indicates_success <- function(x) {
     if ( !is.character(x) ) return(FALSE)
     any(grepl("---BEGIN.SOLUTION---", x, fixed = TRUE))
-}
-
-neos_get_results <- function(job) {
-    url <- "https://www.neos-server.org"
-    fn <- 'results.txt'
-    params <- list(jobNumber = job@jobnumber, password = job@password, fileName = fn)
-    resp <- xmlrpc(url, "getOutputFile", params = params)
-    rawToChar(resp)
 }
 
 extract_results <- function(neos_results) {
@@ -193,4 +174,3 @@ extract_results <- function(neos_results) {
     b <- duplicated(i)
     setNames(split(as.double(res[b]), i[b]), gsub(":", "", res[!b], fixed = TRUE))
 }
-
