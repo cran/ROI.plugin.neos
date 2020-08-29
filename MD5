@@ -1,4 +1,4 @@
-910bd24d68df4f8a62202daaffd483f6 *DESCRIPTION
+363d383141e3ec444d9270acb2ed6d2c *DESCRIPTION
 b8c7c715891d7d5b5b84443368b86133 *NAMESPACE
 70aec8597bd827963b5179b9b567f200 *R/lp_to_gams.R
 42c54279cb0d0dd660ac560f8d34e6cf *R/milp_to_gams.R
@@ -11,12 +11,12 @@ af11f4c7f4d1c7f66251ed8612dbff6b *R/plugin.R
 c9bbb8456fd9bdd1e9bc60635936954b *R/status_codes.R
 232fb0c30dfcc51afd71100a6722fc2e *R/utilities.R
 8fb35eeed549a1680fedbd04d5fa601d *R/zzz.R
-ab387c57dcd64980c2e79b1c2c409291 *build/vignette.rds
+823131d3a2400cd9128d71a4f92a2919 *build/vignette.rds
 d556669b7e586d58bc194533ba35f2c7 *inst/doc/ROI.plugin.neos_Introduction.Rnw
-44b355cb167b2791872f7f8a3ebb0d12 *inst/doc/ROI.plugin.neos_Introduction.pdf
+a0a0529cc2be9d327b61d0d166417c3b *inst/doc/ROI.plugin.neos_Introduction.pdf
 237c4eea4aedab7358af0780570dde88 *man/Example_01.Rd
 49843b5ab310345c249bf794d9d3e248 *man/control.Rd
 051df8533e592f93cbba14ad66f0cb55 *tests/test_ROI_plugin_neos.R
-718ff4f7806bc3bbfa4ec78c92586a9e *tests/test_ROI_plugin_neos.Rout
+b683a121f0c6bc7744354da2dfdd4b0a *tests/test_ROI_plugin_neos.Rout
 d556669b7e586d58bc194533ba35f2c7 *vignettes/ROI.plugin.neos_Introduction.Rnw
 f48297a423110442d72a321640862e79 *vignettes/neos.bib
