@@ -1,25 +1,11 @@
 ## Imports
-#' @import "ROI"
-#' @import "xml2"
-#' @import "xmlrpc2"
-#' @importFrom "methods", "getPackageName", "getFunction"
-#' @importFrom "stats", "setNames", "terms", "aggregate"
-#' @importFrom "utils", "tail", "modifyList"
+#' @import ROI
+#' @import xml2
+#' @import xmlrpc2
+#' @importFrom methods getPackageName getFunction
+#' @importFrom stats setNames terms aggregate
+#' @importFrom utils tail modifyList
 #
-
-#' @title Control Variables
-#' @description The control variables for \code{ROI.plugin.neos}.
-#'   \arguments{
-#'      \item{user}{a character string giving the username.}
-#'      \item{email}{a character string giving the email address.}
-#'      \item{dry_run}{a logical if \code{TRUE} \pkg{ROI} returns the solver call.}
-#'      \item{wait}{a logical indicating whether the R interpreter should wait for the 
-#'          command to finish, or run it asynchronously. If \code{TRUE} 
-#'          \pkg{ROI} returns an object of class \code{"neos_job"}.}
-#'   }
-#' @name control
-#' @rdname control
-NULL
 
 
 #' @title Linear Problem 1
@@ -41,8 +27,8 @@ NULL
 #'                                    dir = c("<=", "<=", "<="),
 #'                                    rhs = c(60, 40, 80)),
 #'         maximum = TRUE)
-#' 
-#' 
+#'
+#'
 #' opt <- ROI_solve(x, solver = "neos", method = "scip")
 #' opt
 #' ## Optimal solution found.
@@ -57,12 +43,12 @@ NULL
 
 
 ## NOTE: Gurobi
-##       The Gurobi license for NEOS does not permit connections via XML-RPC. 
-##       If you look at a solver page for Gurobi, for example, 
-##       https://neos-server.org/neos/solvers/milp:Gurobi/AMPL.html, you will 
-##       see that the XML-RPC interface is disabled. The license only allows 
-##       submissions via the web interface. If you were able to submit jobs via 
-##       XML-RPC previously, that was a mistake on our part introduced during an 
+##       The Gurobi license for NEOS does not permit connections via XML-RPC.
+##       If you look at a solver page for Gurobi, for example,
+##       https://neos-server.org/neos/solvers/milp:Gurobi/AMPL.html, you will
+##       see that the XML-RPC interface is disabled. The license only allows
+##       submissions via the web interface. If you were able to submit jobs via
+##       XML-RPC previously, that was a mistake on our part introduced during an
 ##       update to the NEOS codebase.
 
 write_gams <- function(x, file, ...) {
@@ -76,10 +62,10 @@ set_default_control_values <- function(x) {
 }
 
 select_method <- function(model_type, is_mip) {
-    if ( is_mip ) {       
-        if ( model_type == "lp" ) "mosek" else "Knitro"
+    if (is_mip) {
+        if (model_type == "lp") "mosek" else "Knitro"
     } else {
-        if ( model_type == "lp" ) "mosek" else "Knitro"
+        if (model_type == "lp") "mosek" else "Knitro"
     }
 }
 
@@ -91,7 +77,7 @@ match_solver <- function(method) {
 }
 
 select_neos_solver <- function(method, is_mip, model_type) {
-    if ( method == "auto" ) {
+    if (method == "auto") {
         method <- select_method(model_type, is_mip)
         # warning("no method provided set to ", shQuote(method), call. = TRUE)
         return(method)
@@ -101,11 +87,11 @@ select_neos_solver <- function(method, is_mip, model_type) {
 
 neos_xml_call <- function(model, solver_name, control) {
     cate <- unname(match_category(solver_name))
-    template <- neos_solver_template(category = cate, solver_name = solver_name, 
+    template <- neos_solver_template(category = cate, solver_name = solver_name,
                                      input_method = "GAMS")
     control$model <- model
-    template_args <- c("email", "model", "options", "parameters", "gdx", "restart", 
-        "wantgdx", "wantlst", "wantlog", "comments")
+    template_args <- c("email", "model", "options", "parameters", "gdx",
+                       "restart", "wantgdx", "wantlst", "wantlog", "comments")
     argslist <- control[template_args]
     if (nchar(argslist$email) == 0) {
         argslist$email <- NULL
@@ -115,7 +101,7 @@ neos_xml_call <- function(model, solver_name, control) {
 }
 
 raise_licence_error <- function(password) {
-    stop(paste(password, collapse = "\n"), 
+    stop(paste(password, collapse = "\n"),
          " In some cases the solver licence does not permit connections via", 
          " XML-RPC. Therefore these solvers can not be accessed by 'ROI.plugin.neos'",
          " directly. An alternative option is to write the problem out via",
@@ -124,43 +110,72 @@ raise_licence_error <- function(password) {
 }
 
 
-neos_control <- function(method="auto", wait = TRUE, email="", password="", user = "rneos", 
-    dry_run=FALSE, options="", parameters="", gdx="", restart="", wantgdx="", wantlst="",
-    wantlog="", comments="") {
+#' @title Neos Control Variables
+#' @description The control variables for \code{ROI.plugin.neos}.
+#' @param method a chracter string giving the name of the solver to be selected
+#'               on the \code{NEOS} server.
+#' @param wait a logical indicating whether the R interpreter should wait for the
+#'             command to finish, or run it asynchronously. If \code{TRUE}
+#'             \pkg{ROI} returns an object of class \code{"neos_job"}.
+#' @param email a character string giving the email address.
+#' @param password a character string giving the account password.
+#' @param user a character string giving the username.
+#' @param dry_run a logical if \code{TRUE} \pkg{ROI} returns the solver call.
+#' @param options a character string (default is \code{""}) passed to \code{options}
+#'                tag of the \code{GAMS} solver template.
+#' @param parameters a character string (default is \code{""}) passed to \code{parameters}
+#'                   tag of the \code{GAMS} solver template.
+#' @param gdx a character string (default is \code{""}) passed to \code{gdx}
+#'            tag of the \code{GAMS} solver template.
+#' @param restart a character string (default is \code{""}) passed to \code{restart}
+#'                tag of the \code{GAMS} solver template.
+#' @param wantgdx a character string (default is \code{""}) passed to \code{wantgdx}
+#'                tag of the \code{GAMS} solver template.
+#' @param wantlst a character string (default is \code{""}) passed to \code{wantlst}
+#'                tag of the \code{GAMS} solver template.
+#' @param wantlog a character string (default is \code{""}) passed to \code{wantlog}
+#'                tag of the \code{GAMS} solver template.
+#' @param comments a character string (default is \code{""}) passed to \code{comments}
+#'                 tag of the \code{GAMS} solver template.
+#' @export
+neos_control <- function(method = "auto", wait = TRUE, email = "", password = "",
+                         user = "rneos", dry_run = FALSE, options = "",
+                         parameters = "", gdx = "", restart = "", wantgdx = "",
+                         wantlst = "", wantlog = "", comments = "") {
     as.list(environment())
 }
 
 solve_OP <- function(x, control = neos_control()) {
     control <- set_default_control_values(control)
 
-    if ( inherits(constraints(x), "NO_constraint") ) {
+    if (inherits(constraints(x), "NO_constraint")) {
         L <- matrix(0, nrow = 0, ncol = length(objective(x)))
         constraints(x) <- L_constraint(L = L , dir = character(), rhs = double())
     }
-    
+
     model_type <- which_model_type(x)
     is_mip <- any(types(x) %in% c("B", "I"))
-    
+
     model <- to_gams(x)
 
     solver_name <- unname(select_neos_solver(control$method, is_mip, model_type))
 
     xml <- neos_xml_call(model, solver_name, control)
-    solver_call <- list(neos_submit_job, x = x, xmlstring = xml, user = control$user, 
-                        password = control$password)
+    solver_call <- list(neos_submit_job, x = x, xmlstring = xml,
+                        user = control$user, password = control$password)
     mode(solver_call) <- "call"
-    if ( isTRUE(control$dry_run) )
+    if (isTRUE(control$dry_run))
         return(solver_call)
 
     job <- eval(solver_call)
 
-    if ( any(grep("Error", job$password, ignore.case = TRUE)) )
+    if (any(grep("Error", job$password, ignore.case = TRUE)))
         raise_licence_error(job$password)
 
-    if ( !isTRUE(control$wait) )
+    if (!isTRUE(control$wait))
         return(job)
 
-    job$solution(wait=TRUE)
+    job$solution(wait = TRUE)
 }
 
 neos_message_indicates_success <- function(x) {

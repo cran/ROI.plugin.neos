@@ -90,7 +90,6 @@ set_template_parameters <- function(xml_template, params) {
             xml_add_sibling(template_params[[length(template_params)]],
                 new_xml_node(key, params[[key]]))
         }
-        
     }
     as.character(xml_template)
 }
@@ -166,7 +165,7 @@ neos_job <- function(job_number, password, x) {
         objval <- tryCatch(unname(self$objective_function(neos_results$solution)), error = function(e) NA_real_)
         status <- generate_status_code(neos_results$solver_status, neos_results$model_status)
         neos_results$message <- neos_message
-    
+
         ROI_plugin_canonicalize_solution(solution = neos_results$solution, 
                                          optimum = objval, status = status,
                                          solver = "neos", message = neos_results)
@@ -180,7 +179,7 @@ neos_read_result_file <- function(file, neos_message, objective_function) {
                        error = function(e) NA_real_)
     status <- generate_status_code(neos_results$solver_status, neos_results$model_status)
     neos_results$message <- neos_message
-    
+
     ROI_plugin_canonicalize_solution(solution = neos_results$solution, 
                                      optimum = objval, status = status,
                                      solver = "neos", message = neos_results)
@@ -205,8 +204,5 @@ neos_client <- function() {
     }
     neos$listCategories <- neos_ls_categories
     neos$getSolverTemplate <- neos_solver_template
-    neos    
+    neos
 }
-
-
-

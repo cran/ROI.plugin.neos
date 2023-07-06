@@ -38,7 +38,7 @@ report <- function(x) {
 ##
 test_lp_01 <- function(solver) {
     mat <- matrix(c(3, 4, 2, 2, 1, 2, 1, 3, 2), nrow=3, byrow=TRUE)
-    
+
 
     x <- OP(objective = c(2, 4, 3),
             constraints = L_constraint(L = mat,
