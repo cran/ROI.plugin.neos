@@ -8,12 +8,9 @@ writeLines(c("", paste(" Test date:", Sys.time()), ""))
 
 Sys.setenv(ROI_LOAD_PLUGINS = FALSE)
 
-library(slam)
-library(ROI)
-## library(ROI.plugin.glpk)
-## library(ROI.plugin.cplex)
-## library(ROI.plugin.gurobi)
-library(ROI.plugin.neos)
+library("slam")
+library("ROI")
+library("ROI.plugin.neos")
 
 check <- function(domain, condition) {
     if ( isTRUE(condition) ) {
@@ -32,6 +29,23 @@ report <- function(x) {
         writeLines(c("", "  Missmatches:", sprintf("      %s", x$missmatch)))
     writeLines("")
 }
+
+
+#
+# Test GAMS conversion
+#
+test_lp_00 <- function(solver) {
+    mat <- matrix(c(3, 4, 2, 2, 1, 2, 1, 3, 2), nrow=3, byrow=TRUE)
+
+    x <- OP(objective = c(2, 4, 3),
+            constraints = L_constraint(L = mat,
+                                       dir = c("<=", "<=", "<="),
+                                       rhs = c(60, 40, 80)),
+            bounds = V_bound(ui = seq_len(3), ub = c(1000, Inf, 1000), nobj = 3),
+            maximum = TRUE)
+    to_gams(x)
+}
+
 
 ##
 ## Test a normal LP
@@ -310,6 +324,7 @@ if ( !any("neos" %in% names(ROI_registered_solvers())) ) {
     solver <- "neos"
     STATS <- list(success = character(), missmatch = character())
     ## Deactivate testing since we don't want to spam the neos server.
+        local({test_lp_00()})
     if ( isTRUE(Sys.getenv("ROI_PLUGIN_NEOS") == "RUN_TESTS") ) {
         ## A linear Problem with linear constraints.
         local({test_lp_01(solver)})

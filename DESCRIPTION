@@ -1,5 +1,5 @@
 Package: ROI.plugin.neos
-Version: 1.0-1
+Version: 1.0-2
 Title: 'NEOS' Plug-in for the 'R' Optimization Interface
 Authors@R: c( person("Ronald", "Hochreiter", role = "aut"),
               person("Florian", "Schwendinger", role = c("aut", "cre"), email = "FlorianSchwendinger@gmx.at"))
@@ -13,11 +13,11 @@ License: GPL-3
 Encoding: UTF-8
 URL: https://roigrp.gitlab.io,
         https://gitlab.com/roigrp/solver/ROI.plugin.neos
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2023-07-06 14:44:36 UTC; f
+Packaged: 2023-11-25 21:38:34 UTC; f
 Author: Ronald Hochreiter [aut],
   Florian Schwendinger [aut, cre]
 Maintainer: Florian Schwendinger <FlorianSchwendinger@gmx.at>
 Repository: CRAN
-Date/Publication: 2023-07-06 15:10:05 UTC
+Date/Publication: 2023-11-25 22:10:02 UTC

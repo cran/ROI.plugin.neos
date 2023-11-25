@@ -1,6 +1,28 @@
 
+#' Translate to GAMS
+#'
+#' Translate a \code{ROI} \code{OP} to \code{GAMS} code.
+#' This function can translate optimization problems with linear or quadratic objective
+#' and linear or quadratic constraints.
+#'
+#' @param x an \pkg{ROI} object of class \code{OP}.
+#' @returns a character string giving the GAMS optimization model.
+#' @examples
+#' library("ROI")
+#' mat <- matrix(c(3, 4, 2, 2, 1, 2, 1, 3, 2), nrow=3, byrow=TRUE)
+#' x <- OP(objective = c(2, 4, 3),
+#'         constraints = L_constraint(L = mat,
+#'                                    dir = c("<=", "<=", "<="),
+#'                                    rhs = c(60, 40, 80)),
+#'         bounds = V_bound(ui = seq_len(3), ub = c(1000, Inf, 1000), nobj = 3),
+#'         maximum = TRUE)
+#' writeLines(to_gams(x))
+#' @export
 to_gams <- function(x) UseMethod("to_gams")
 
+
+#' @noRd
+#' @export
 to_gams.OP <- function(x) {
     model_type <- which_model_type(x)
     to_gams <- switch(model_type, lp   = roi_lp_to_gams, 
